@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>问答星球 - 有趣的知识社区</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-light: #94a3b8;
+            --border: #334155;
+            --shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 70px;
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        body.custom-bg {
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        body.custom-bg::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: -1;
+        }
+
+        /* 登录页 */
+        .auth-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .auth-page::before {
+            content: '';
+            position: absolute;
+            width: 300px; height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            top: -100px; right: -100px;
+            animation: float 6s ease-in-out infinite;
+        }
+        .auth-page::after {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            bottom: -50px; left: -50px;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+        .auth-box {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 35px 30px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .auth-logo-icon {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, #667eea, #ec4899);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 12px;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .auth-title {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        .auth-subtitle {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 25px;
+        }
+        .auth-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+        .auth-tab.active {
+            background: white;
+            color: #6366f1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .form-group { margin-bottom: 16px; }
+        .form-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .form-input-icon {
+            position: absolute;
+            left: 14px;
+            font-size: 16px;
+            z-index: 1;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px 14px 42px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 14px;
+            transition: all 0.3s;
+            outline: none;
+            background: #f8fafc;
+        }
+        .form-input:focus {
+            border-color: #6366f1;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        }
+        .avatar-select {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .avatar-option {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            background: #f1f5f9;
+        }
+        .avatar-option.selected {
+            border-color: #6366f1;
+            transform: scale(1.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(99,102,241,0.45); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-wechat { background: #07c160; color: white; }
+        .btn-qq { background: #12b7f5; color: white; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 22px 0 18px;
+        }
+        .divider-line { flex: 1; height: 1px; background: #e2e8f0; }
+        .divider-text { padding: 0 12px; font-size: 12px; color: #94a3b8; }
+
+        .third-party-login {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+        .third-party-btn {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .third-party-btn:hover { transform: scale(1.1) translateY(-3px); }
+        .third-party-btn.wechat { background: #07c160; color: white; }
+        .third-party-btn.qq { background: #12b7f5; color: white; }
+        .third-party-label {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        /* 扫码登录弹窗 */
+        .qr-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .qr-modal.show { display: flex; }
+        .qr-box {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .qr-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .qr-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+        .qr-code {
+            width: 180px; height: 180px;
+            margin: 0 auto 15px;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .qr-code canvas { width: 100%; height: 100%; }
+        .qr-scan-line {
+            position: absolute;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #07c160, transparent);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        .qr-status {
+            font-size: 14px;
+            color: #07c160;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .qr-close {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: #f1f5f9;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        /* 主界面 */
+        .main-app { display: none; }
+        .main-app.show { display: block; }
+
+        /* 顶部导航 */
+        .topbar {
+            background: var(--card);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+        .topbar-logo {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .topbar-search {
+            flex: 1;
+            background: var(--bg);
+            border-radius: 20px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+        }
+        .topbar-actions { display: flex; gap: 8px; }
+        .topbar-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .topbar-btn:hover { transform: scale(1.1); }
+        .topbar-badge {
+            position: absolute;
+            top: -2px; right: -2px;
+            width: 16px; height: 16px;
+            background: #ef4444;
+            border-radius: 50%;
+            font-size: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .topbar-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            border: 2px solid var(--primary);
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            color: white;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .topbar-avatar:hover { transform: scale(1.1); }
+
+        /* 签到横幅 */
+        .checkin-banner {
+            margin: 12px 16px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(245,158,11,0.3);
+        }
+        .checkin-banner:hover { transform: translateY(-2px); }
+        .checkin-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .checkin-info p { font-size: 12px; opacity: 0.9; }
+        .checkin-btn {
+            background: white;
+            color: #f59e0b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* 分类标签 */
+        .categories {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .categories::-webkit-scrollbar { display: none; }
+        .cat-tag {
+            padding: 8px 16px;
+            background: var(--card);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+            color: var(--text-light);
+            border: 2px solid transparent;
+        }
+        .cat-tag.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 问题卡片 */
+        .question-card {
+            background: var(--card);
+            border-radius: 18px;
+            margin: 0 16px 14px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: fadeInUp 0.5s ease both;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .question-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .question-avatar {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 10px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            color: white;
+            font-weight: 700;
+        }
+        .question-meta { flex: 1; }
+        .question-author {
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .level-badge {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .question-time { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+        .question-follow {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .question-follow.followed {
+            background: var(--primary);
+            color: white;
+        }
+        .question-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: var(--text);
+        }
+        .question-content {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .question-tags {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .question-tag {
+            background: rgba(99,102,241,0.1);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .question-footer {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        .question-action {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .question-action:hover { background: var(--bg); color: var(--primary); }
+        .question-action.liked { color: #ef4444; }
+        .question-action .icon { font-size: 16px; }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0; right: 0;
+            background: var(--card);
+            display: flex;
+            padding: 8px 0 12px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            z-index: 100;
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: all 0.3s;
+            position: relative;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active .nav-icon { transform: translateY(-3px) scale(1.15); }
+        .nav-icon { font-size: 22px; margin-bottom: 2px; transition: all 0.3s; }
+        .nav-label { font-size: 10px; font-weight: 600; }
+        .nav-publish {
+            position: absolute;
+            top: -20px;
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(99,102,241,0.4);
+            border: 4px solid var(--bg);
+        }
+
+        /* 弹窗通用 */
+        .modal-mask {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 500;
+        }
+        .modal-mask.show { display: flex; }
+        .modal {
+            background: var(--card);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUpModal 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUpModal {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .modal-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--card);
+            z-index: 10;
+        }
+        .modal-title { font-size: 17px; font-weight: 700; }
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+            background: none;
+            border: none;
+            width: 30px; height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-body { padding: 20px; }
+
+        /* 提问弹窗 */
+        .ask-category-select {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .ask-category {
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: var(--bg);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--text-light);
+        }
+        .ask-category.selected {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        /* 问题详情 */
+        .detail-author-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 14px;
+        }
+        .detail-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        .detail-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+        .answers-section { margin-top: 20px; }
+        .answers-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .answer-card {
+            background: var(--bg);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .answer-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .answer-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin-right: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-weight: 700;
+        }
+        .answer-author { font-size: 14px; font-weight: 700; }
+        .answer-time { font-size: 11px; color: var(--text-light); margin-left: auto; }
+        .answer-content {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+        .answer-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* 个人中心 */
+        .profile-header {
+            position: relative;
+            height: 180px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            margin: -20px -20px 0;
+            overflow: hidden;
+        }
+        .profile-header-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+        }
+        .profile-edit-bg {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: rgba(0,0,0,0.4);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .profile-info {
+            padding: 0 20px 20px;
+            margin-top: -40px;
+            position: relative;
+        }
+        .profile-avatar-large {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            color: white;
+            font-weight: 700;
+            border: 4px solid var(--card);
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        .profile-name { font-size: 20px; font-weight: 800; }
+        .profile-level {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+        .profile-bio { font-size: 13px; color: var(--text-light); margin-bottom: 12px; }
+        .profile-stats {
+            display: flex;
+            background: var(--bg);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .profile-stat {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+        }
+        .profile-stat .value { font-size: 18px; font-weight: 800; }
+        .profile-stat .label { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+        .profile-menu { background: var(--bg); border-radius: 14px; overflow: hidden; }
+        .profile-menu-item {
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .profile-menu-item:last-child { border-bottom: none; }
+        .profile-menu-item:hover { background: var(--card); }
+        .profile-menu-item .icon { font-size: 18px; margin-right: 12px; }
+        .profile-menu-item .text { flex: 1; font-size: 14px; font-weight: 500; }
+        .profile-menu-item .arrow { color: var(--text-light); font-size: 14px; }
+
+        /* 分享弹窗 */
+        .share-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 18px;
+            padding: 24px;
+            color: white;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .share-card-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+        .share-card-content { font-size: 13px; opacity: 0.9; line-height: 1.6; margin-bottom: 16px; }
+        .share-card-qr {
+            width: 120px; height: 120px;
+            background: white;
+            border-radius: 12px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        .share-methods {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 16px;
+        }
+        .share-method {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .share-method:hover { transform: scale(1.1); }
+        .share-method-icon {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 6px;
+        }
+        .share-method.wechat { background: #07c160; }
+        .share-method.qq { background: #12b7f5; }
+        .share-method.weibo { background: #e6162d; }
+        .share-method.copy { background: #6366f1; }
+        .share-method-label { font-size: 12px; color: var(--text-light); }
+
+        /* 壁纸选择 */
+        .wallpaper-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .wallpaper-option {
+            aspect-ratio: 9/16;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .wallpaper-option.selected { border-color: var(--primary); transform: scale(1.05); }
+        .wallpaper-option .check {
+            position: absolute;
+            top: 6px; right: 6px;
+            width: 22px; height: 22px;
+            background: var(--primary);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 9999;
+            display: none;
+            animation: toastIn 0.3s ease;
+            max-width: 80%;
+            text-align: center;
+        }
+        .toast.show { display: block; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translate(-50%, -40%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+
+        /* 空状态 */
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-light);
+        }
+        .empty .icon { font-size: 60px; margin-bottom: 12px; }
+        .empty .text { font-size: 14px; }
+
+        /* 加载中 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-light);
+        }
+        .spinner {
+            width: 35px; height: 35px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 登录页 -->
+    <div class="auth-page" id="authPage">
+        <div class="auth-box">
+            <div class="auth-logo">
+                <div class="auth-logo-icon">🌍</div>
+                <div class="auth-title">问答星球</div>
+                <div class="auth-subtitle">发现更大的世界，遇见有趣的人</div>
+            </div>
+
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">登录</div>
+                <div class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">注册</div>
+            </div>
+
+            <!-- 登录表单 -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">👤</span>
+                        <input type="text" class="form-input" id="loginUsername" placeholder="用户名/手机号" onkeypress="if(event.key==='Enter')doLogin()">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">🔒</span>
+                        <input type="password" class="form-input" id="loginPassword" placeholder="密码" onkeypress="if(event.key==='Enter')doLogin()">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="doLogin()">登 录</button>
+            </div>
+
+            <!-- 注册表单 -->
+            <div id="registerForm" style="display:none;">
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">👤</span>
+                        <input type="text" class="form-input" id="regUsername" placeholder="设置用户名（2-16位）">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">🔒</span>
+                        <input type="password" class="form-input" id="regPassword" placeholder="设置密码（6位以上）">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">✨</span>
+                        <input type="text" class="form-input" id="regNickname" placeholder="给自己起个昵称">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="font-size:13px; color:#64748b; margin-bottom:8px; display:block;">选择你的头像</label>
+                    <div class="avatar-select" id="avatarSelect">
+                        <div class="avatar-option selected" data-avatar="😎">😎</div>
+                        <div class="avatar-option" data-avatar="🐱">🐱</div>
+                        <div class="avatar-option" data-avatar="🐶">🐶</div>
+                        <div class="avatar-option" data-avatar="🦊">🦊</div>
+                        <div class="avatar-option" data-avatar="🐼">🐼</div>
+                        <div class="avatar-option" data-avatar="🦁">🦁</div>
+                        <div class="avatar-option" data-avatar="🐸">🐸</div>
+                        <div class="avatar-option" data-avatar="🦄">🦄</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">💬</span>
+                        <input type="text" class="form-input" id="regBio" placeholder="个性签名（选填）">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="doRegister()">注 册 并 登 录</button>
+            </div>
+
+            <div class="divider">
+                <div class="divider-line"></div>
+                <div class="divider-text">其他登录方式</div>
+                <div class="divider-line"></div>
+            </div>
+
+            <div class="third-party-login">
+                <div class="third-party-btn wechat" onclick="showQRLogin('wechat')" title="微信登录">💚</div>
+                <div class="third-party-btn qq" onclick="showQRLogin('qq')" title="QQ登录">🐧</div>
+            </div>
+            <div class="third-party-label">微信/QQ一键登录，安全快捷</div>
+        </div>
+    </div>
+
+    <!-- 扫码登录弹窗 -->
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-box">
+            <div class="qr-title" id="qrTitle">微信登录</div>
+            <div class="qr-subtitle" id="qrSubtitle">请使用微信扫一扫登录</div>
+            <div class="qr-code">
+                <canvas id="qrCanvas"></canvas>
+                <div class="qr-scan-line"></div>
+            </div>
+            <div class="qr-status" id="qrStatus">正在等待扫码...</div>
+            <button class="qr-close" onclick="closeQRLogin()">取消</button>
+        </div>
+    </div>
+
+    <!-- 主应用 -->
+    <div class="main-app" id="mainApp">
+        <!-- 顶部导航 -->
+        <div class="topbar">
+            <div class="topbar-logo">🌍 问答星球</div>
+            <div class="topbar-search" onclick="showToast('搜索功能开发中~')">
+                <span>🔍</span>
+                <span>搜索感兴趣的问题...</span>
+            </div>
+            <div class="topbar-actions">
+                <div class="topbar-btn" onclick="toggleTheme()">
+                    <span id="themeIcon">🌙</span>
+                </div>
+                <div class="topbar-btn" onclick="showNotifications()">
+                    🔔
+                    <span class="topbar-badge">3</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 首页 -->
+        <div class="page active" id="page-home">
+            <!-- 签到横幅 -->
+            <div class="checkin-banner" onclick="doCheckin()">
+                <div class="checkin-info">
+                    <h3>🎁 每日签到领积分</h3>
+                    <p id="checkinText">已连续签到3天，今日签到+10积分</p>
+                </div>
+                <button class="checkin-btn" id="checkinBtn">立即签到</button>
+            </div>
+
+            <!-- 分类 -->
+            <div class="categories" id="categories">
+                <div class="cat-tag active">推荐</div>
+                <div class="cat-tag">科技</div>
+                <div class="cat-tag">生活</div>
+                <div class="cat-tag">情感</div>
+                <div class="cat-tag">学习</div>
+                <div class="cat-tag">职场</div>
+                <div class="cat-tag">娱乐</div>
+                <div class="cat-tag">游戏</div>
+            </div>
+
+            <!-- 问题列表 -->
+            <div id="questionsList">
+                <div class="loading"><div class="spinner"></div>加载中...</div>
+            </div>
+        </div>
+
+        <!-- 发现页 -->
+        <div class="page" id="page-explore">
+            <div class="empty">
+                <div class="icon">🔍</div>
+                <div class="text">发现页正在建设中，敬请期待~</div>
+            </div>
+        </div>
+
+        <!-- 消息页 -->
+        <div class="page" id="page-message">
+            <div class="empty">
+                <div class="icon">💬</div>
+                <div class="text">暂无新消息</div>
+            </div>
+        </div>
+
+        <!-- 我的页 -->
+        <div class="page" id="page-profile">
+            <div id="profileContent"></div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-page="home" onclick="switchPage('home')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">首页</div>
+            </div>
+            <div class="nav-item" data-page="explore" onclick="switchPage('explore')">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-label">发现</div>
+            </div>
+            <div class="nav-item" onclick="showAskModal()">
+                <div class="nav-publish">➕</div>
+            </div>
+            <div class="nav-item" data-page="message" onclick="switchPage('message')">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">消息</div>
+            </div>
+            <div class="nav-item" data-page="profile" onclick="switchPage('profile')">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提问弹窗 -->
+    <div class="modal-mask" id="askModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">✏️ 提出问题</div>
+                <button class="modal-close" onclick="closeAskModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="font-size:13px; color:#64748b; margin-bottom:8px; display:block;">选择分类</label>
+                    <div class="ask-category-select" id="askCategorySelect">
+                        <div class="ask-category selected">科技</div>
+                        <div class="ask-category">生活</div>
+                        <div class="ask-category">情感</div>
+                        <div class="ask-category">学习</div>
+                        <div class="ask-category">职场</div>
+                        <div class="ask-category">娱乐</div>
+                        <div class="ask-category">游戏</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">📝</span>
+                        <input type="text" class="form-input" id="askTitle" placeholder="一句话描述你的问题">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <textarea class="form-input" id="askContent" placeholder="详细描述你的问题（选填），让大家更好地帮助你..." style="height:120px; padding:14px; resize:none;"></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitQuestion()">发布问题</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 问题详情弹窗 -->
+    <div class="modal-mask" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">问题详情</div>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            <div class="modal-body" id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div class="modal-mask" id="shareModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">分享到</div>
+                <button class="modal-close" onclick="closeShareModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-card">
+                    <div class="share-card-title" id="shareTitle">这个问题很有趣</div>
+                    <div class="share-card-content" id="shareContent">快来问答星球一起讨论吧！</div>
+                    <div class="share-card-qr">📱</div>
+                    <div style="font-size:11px; opacity:0.8; margin-top:8px;">扫码查看详情</div>
+                </div>
+                <div class="share-methods">
+                    <div class="share-method" onclick="shareTo('wechat')">
+                        <div class="share-method-icon wechat">💚</div>
+                        <div class="share-method-label">微信好友</div>
+                    </div>
+                    <div class="share-method" onclick="shareTo('moments')">
+                        <div class="share-method-icon wechat">🌅</div>
+                        <div class="share-method-label">朋友圈</div>
+                    </div>
+                    <div class="share-method" onclick="shareTo('qq')">
+                        <div class="share-method-icon qq">🐧</div>
+                        <div class="share-method-label">QQ好友</div>
+                    </div>
+                    <div class="share-method" onclick="shareTo('copy')">
+                        <div class="share-method-icon copy">🔗</div>
+                        <div class="share-method-label">复制链接</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑资料弹窗 -->
+    <div class="modal-mask" id="editProfileModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">编辑资料</div>
+                <button class="modal-close" onclick="closeEditProfile()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="font-size:13px; color:#64748b; margin-bottom:8px; display:block;">昵称</label>
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">✨</span>
+                        <input type="text" class="form-input" id="editNickname" placeholder="输入新昵称">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="font-size:13px; color:#64748b; margin-bottom:8px; display:block;">个性签名</label>
+                    <div class="form-input-wrap">
+                        <span class="form-input-icon">💬</span>
+                        <input type="text" class="form-input" id="editBio" placeholder="介绍一下自己吧">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label style="font-size:13px; color:#64748b; margin-bottom:8px; display:block;">选择头像</label>
+                    <div class="avatar-select" id="editAvatarSelect"></div>
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 壁纸选择弹窗 -->
+    <div class="modal-mask" id="wallpaperModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">🎨 自定义背景</div>
+                <button class="modal-close" onclick="closeWallpaperModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="wallpaper-grid" id="wallpaperGrid"></div>
+                <button class="btn btn-ghost" style="background:#f1f5f9; color:#64748b;" onclick="resetWallpaper()">恢复默认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 配置 ====================
+        const CONFIG = {
+            JSONBIN_BIN_ID: '6a9d13b2f5f4af5e29706f72',
+            JSONBIN_ACCESS_KEY: '$2a$10$H6RNZ8yRl2VzOoJvBsDCT.j1JiSt7uinVUZ.tmlwgen78ATCB7lZq',
+            API_BASE: 'https://api.jsonbin.io/v3/b',
+            APP_NAME: '问答星球'
+        };
+
+        // 全局状态
+        let currentUser = null;
+        let appData = { users: [], questions: [], checkins: {} };
+        let currentQuestion = null;
+        let selectedAvatar = '😎';
+        let selectedCategory = '科技';
+        let currentShareQuestion = null;
+
+        // 壁纸列表
+        const WALLPAPERS = [
+            { id: 'default', name: '默认', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
+            { id: 'sunset', name: '日落', gradient: 'linear-gradient(135deg, #ff6b6b, #feca57)' },
+            { id: 'ocean', name: '海洋', gradient: 'linear-gradient(135deg, #0abde3, #4834d4)' },
+            { id: 'forest', name: '森林', gradient: 'linear-gradient(135deg, #00b894, #00cec9)' },
+            { id: 'pink', name: '樱花', gradient: 'linear-gradient(135deg, #fd79a8, #e84393)' },
+            { id: 'purple', name: '星空', gradient: 'linear-gradient(135deg, #6c5ce7, #a29bfe)' },
+            { id: 'dark', name: '暗夜', gradient: 'linear-gradient(135deg, #2d3436, #636e72)' },
+            { id: 'gold', name: '金色', gradient: 'linear-gradient(135deg, #fdcb6e, #e17055)' },
+            { id: 'mint', name: '薄荷', gradient: 'linear-gradient(135deg, #55efc4, #81ecec)' }
+        ];
+
+        // ==================== 工具函数 ====================
+        function showToast(msg, duration = 2000) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            const time = new Date(timeStr);
+            const now = new Date();
+            const diff = now - time;
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+            return time.toLocaleDateString('zh-CN');
+        }
+
+        function getLevel(exp) {
+            if (exp < 100) return { level: 1, name: '萌新', next: 100 };
+            if (exp < 300) return { level: 2, name: '小白', next: 300 };
+            if (exp < 600) return { level: 3, name: '学者', next: 600 };
+            if (exp < 1000) return { level: 4, name: '达人', next: 1000 };
+            if (exp < 2000) return { level: 5, name: '专家', next: 2000 };
+            return { level: 6, name: '大师', next: 99999 };
+        }
+
+        // ==================== 数据操作 ====================
+        async function loadData() {
+            try {
+                const res = await fetch(`${CONFIG.API_BASE}/${CONFIG.JSONBIN_BIN_ID}/latest`, {
+                    headers: { 'X-Access-Key': CONFIG.JSONBIN_ACCESS_KEY }
+                });
+                const data = await res.json();
+                appData = (data.record && data.record.qa) || { users: [], questions: [], checkins: {} };
+                return appData;
+            } catch (e) {
+                console.error('加载数据失败', e);
+                return appData;
+            }
+        }
+
+        async function saveData() {
+            try {
+                const res = await fetch(`${CONFIG.API_BASE}/${CONFIG.JSONBIN_BIN_ID}/latest`, {
+                    headers: { 'X-Access-Key': CONFIG.JSONBIN_ACCESS_KEY }
+                });
+                const fullData = await res.json();
+                const record = fullData.record || {};
+                record.qa = appData;
+
+                await fetch(`${CONFIG.API_BASE}/${CONFIG.JSONBIN_BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': CONFIG.JSONBIN_ACCESS_KEY
+                    },
+                    body: JSON.stringify(record)
+                });
+                return true;
+            } catch (e) {
+                console.error('保存数据失败', e);
+                showToast('网络错误，请稍后重试');
+                return false;
+            }
+        }
+
+        // ==================== 登录注册 ====================
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.auth-tab[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+        }
+
+        // 头像选择
+        document.querySelectorAll('#avatarSelect .avatar-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('#avatarSelect .avatar-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                selectedAvatar = opt.dataset.avatar;
+            });
+        });
+
+        async function doLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showToast('请输入用户名和密码');
+                return;
+            }
+
+            await loadData();
+            const user = appData.users.find(u => (u.username === username || u.phone === username) && u.password === password);
+
+            if (!user) {
+                showToast('用户名或密码错误');
+                return;
+            }
+
+            currentUser = user;
+            localStorage.setItem('qa_current_user', JSON.stringify(user));
+            showToast('登录成功！欢迎回来，' + (user.nickname || user.username));
+            enterApp();
+        }
+
+        async function doRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const nickname = document.getElementById('regNickname').value.trim() || username;
+            const bio = document.getElementById('regBio').value.trim();
+
+            if (username.length < 2 || username.length > 16) {
+                showToast('用户名需要2-16位');
+                return;
+            }
+            if (password.length < 6) {
+                showToast('密码至少6位');
+                return;
+            }
+
+            await loadData();
+            if (appData.users.find(u => u.username === username)) {
+                showToast('用户名已存在');
+                return;
+            }
+
+            const newUser = {
+                id: 'U' + Date.now(),
+                username: username,
+                password: password,
+                nickname: nickname,
+                avatar: selectedAvatar,
+                bio: bio || '这个人很懒，什么都没写~',
+                exp: 10,
+                followers: 0,
+                following: [],
+                wallpaper: 'default',
+                theme: 'light',
+                createTime: new Date().toISOString()
+            };
+
+            appData.users.push(newUser);
+            await saveData();
+
+            currentUser = newUser;
+            localStorage.setItem('qa_current_user', JSON.stringify(newUser));
+            showToast('注册成功！欢迎加入问答星球🎉');
+            enterApp();
+        }
+
+        // 微信/QQ扫码登录
+        function showQRLogin(type) {
+            const modal = document.getElementById('qrModal');
+            const title = document.getElementById('qrTitle');
+            const subtitle = document.getElementById('qrSubtitle');
+            const status = document.getElementById('qrStatus');
+
+            if (type === 'wechat') {
+                title.textContent = '微信登录';
+                subtitle.textContent = '请使用微信扫一扫登录';
+            } else {
+                title.textContent = 'QQ登录';
+                subtitle.textContent = '请使用QQ扫一扫登录';
+            }
+            status.textContent = '正在等待扫码...';
+
+            modal.classList.add('show');
+
+            // 绘制假二维码
+            drawFakeQR();
+
+            // 模拟扫码登录流程
+            setTimeout(() => {
+                status.textContent = '✅ 扫码成功，请在手机上确认';
+                setTimeout(() => {
+                    status.textContent = '登录成功，正在进入...';
+                    setTimeout(() => {
+                        closeQRLogin();
+                        // 模拟登录，创建或获取用户
+                        mockThirdPartyLogin(type);
+                    }, 800);
+                }, 1500);
+            }, 2500);
+        }
+
+        function drawFakeQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const ctx = canvas.getContext('2d');
+            const size = 160;
+            canvas.width = size;
+            canvas.height = size;
+
+            // 背景
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, size, size);
+
+            // 随机二维码图案
+            ctx.fillStyle = 'black';
+            const cellSize = 8;
+            for (let i = 0; i < size / cellSize; i++) {
+                for (let j = 0; j < size / cellSize; j++) {
+                    // 三个角留空放定位框
+                    if ((i < 4 && j < 4) || (i < 4 && j > 15) || (i > 15 && j < 4)) continue;
+                    if (Math.random() > 0.5) {
+                        ctx.fillRect(i * cellSize, j * cellSize, cellSize - 1, cellSize - 1);
+                    }
+                }
+            }
+
+            // 三个定位框
+            function drawCorner(x, y) {
+                ctx.fillStyle = 'black';
+                ctx.fillRect(x, y, 28, 28);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(x + 4, y + 4, 20, 20);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(x + 8, y + 8, 12, 12);
+            }
+            drawCorner(4, 4);
+            drawCorner(size - 32, 4);
+            drawCorner(4, size - 32);
+
+            // 中间logo
+            ctx.fillStyle = 'white';
+            ctx.fillRect(size/2 - 18, size/2 - 18, 36, 36);
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🌍', size/2, size/2);
+        }
+
+        async function mockThirdPartyLogin(type) {
+            await loadData();
+            // 查找是否有第三方登录的用户
+            let user = appData.users.find(u => u.thirdParty === type);
+
+            if (!user) {
+                // 创建新用户
+                const randomName = (type === 'wechat' ? '微信用户' : 'QQ用户') + Math.floor(Math.random() * 10000);
+                user = {
+                    id: 'U' + Date.now(),
+                    username: randomName,
+                    password: '',
+                    nickname: randomName,
+                    avatar: type === 'wechat' ? '💚' : '🐧',
+                    bio: '这个人很懒，什么都没写~',
+                    exp: 10,
+                    followers: 0,
+                    following: [],
+                    wallpaper: 'default',
+                    theme: 'light',
+                    thirdParty: type,
+                    createTime: new Date().toISOString()
+                };
+                appData.users.push(user);
+                await saveData();
+            }
+
+            currentUser = user;
+            localStorage.setItem('qa_current_user', JSON.stringify(user));
+            showToast('登录成功！欢迎回来，' + user.nickname);
+            enterApp();
+        }
+
+        function closeQRLogin() {
+            document.getElementById('qrModal').classList.remove('show');
+        }
+
+        function enterApp() {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('mainApp').classList.add('show');
+            updateUserUI();
+            applyUserSettings();
+            loadQuestions();
+            renderProfile();
+            updateCheckinUI();
+        }
+
+        function updateUserUI() {
+            if (!currentUser) return;
+            // 更新顶部头像
+            const topbarAvatar = document.querySelector('.topbar-avatar');
+            if (topbarAvatar) {
+                topbarAvatar.textContent = currentUser.avatar || currentUser.nickname.charAt(0);
+                topbarAvatar.onclick = () => switchPage('profile');
+            }
+        }
+
+        function applyUserSettings() {
+            if (!currentUser) return;
+            // 主题
+            if (currentUser.theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').textContent = '☀️';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.getElementById('themeIcon').textContent = '🌙';
+            }
+            // 壁纸
+            if (currentUser.wallpaper && currentUser.wallpaper !== 'default') {
+                const wp = WALLPAPERS.find(w => w.id === currentUser.wallpaper);
+                if (wp) {
+                    document.body.style.background = wp.gradient;
+                    document.body.classList.add('custom-bg');
+                }
+            } else {
+                document.body.style.background = '';
+                document.body.classList.remove('custom-bg');
+            }
+        }
+
+        function toggleTheme() {
+            if (!currentUser) return;
+            currentUser.theme = currentUser.theme === 'dark' ? 'light' : 'dark';
+            saveData();
+            applyUserSettings();
+            showToast(currentUser.theme === 'dark' ? '已切换到深色模式' : '已切换到浅色模式');
+        }
+
+        // ==================== 签到 ====================
+        function updateCheckinUI() {
+            if (!currentUser) return;
+            const today = new Date().toDateString();
+            const checkinData = appData.checkins[currentUser.id] || { lastDate: '', streak: 0 };
+            const btn = document.getElementById('checkinBtn');
+            const text = document.getElementById('checkinText');
+
+            if (checkinData.lastDate === today) {
+                btn.textContent = '已签到';
+                btn.style.opacity = '0.7';
+                text.textContent = `已连续签到${checkinData.streak}天，明天继续+10积分`;
+            } else {
+                btn.textContent = '立即签到';
+                btn.style.opacity = '1';
+                text.textContent = `已连续签到${checkinData.streak}天，今日签到+10积分`;
+            }
+        }
+
+        async function doCheckin() {
+            if (!currentUser) return;
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            let checkinData = appData.checkins[currentUser.id] || { lastDate: '', streak: 0 };
+
+            if (checkinData.lastDate === today) {
+                showToast('今天已经签到过啦~');
+                return;
+            }
+
+            if (checkinData.lastDate === yesterday) {
+                checkinData.streak++;
+            } else {
+                checkinData.streak = 1;
+            }
+            checkinData.lastDate = today;
+            appData.checkins[currentUser.id] = checkinData;
+
+            // 加积分
+            currentUser.exp = (currentUser.exp || 0) + 10;
+            await saveData();
+
+            showToast(`签到成功！+10积分，连续签到${checkinData.streak}天🎉`);
+            updateCheckinUI();
+            renderProfile();
+        }
+
+        // ==================== 页面切换 ====================
+        function switchPage(page) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+            if (navItem) navItem.classList.add('active');
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${page}`).classList.add('active');
+
+            if (page === 'home') loadQuestions();
+            if (page === 'profile') renderProfile();
+        }
+
+        // ==================== 问题列表 ====================
+        async function loadQuestions() {
+            const container = document.getElementById('questionsList');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+
+            await loadData();
+            const questions = [...(appData.questions || [])].reverse();
+
+            if (questions.length === 0) {
+                // 添加一些示例问题
+                const sampleQuestions = [
+                    { id: 'Q1', title: '你觉得人生最有趣的事情是什么？', content: '最近感觉生活有点无聊，想听听大家的看法，你们觉得人生中最有趣的事情是什么呢？', author: '小明', avatar: '😎', category: '生活', likes: 128, answers: 56, views: 1024, time: Date.now() - 3600000 },
+                    { id: 'Q2', title: '程序员35岁以后真的会被淘汰吗？', content: '作为一个刚入行的程序员，经常听到35岁危机的说法，想问问大家真的是这样吗？该怎么规划职业发展？', author: '代码搬运工', avatar: '🐱', category: '职场', likes: 256, answers: 89, views: 2048, time: Date.now() - 7200000 },
+                    { id: 'Q3', title: '有什么好看的动漫推荐吗？', content: '最近剧荒了，想看点有意思的动漫，各种类型都可以，大家有什么私藏的好作品推荐吗？', author: '二次元爱好者', avatar: '🦊', category: '娱乐', likes: 89, answers: 120, views: 800, time: Date.now() - 10800000 },
+                    { id: 'Q4', title: '怎么才能高效地学习一门新语言？', content: '最近在学英语，但是感觉效率很低，背了单词很快就忘了，大家有什么好的学习方法推荐吗？', author: '学习达人', avatar: '🐼', category: '学习', likes: 167, answers: 45, views: 1500, time: Date.now() - 14400000 }
+                ];
+                appData.questions = sampleQuestions.map(q => ({
+                    ...q,
+                    userId: 'sample_' + q.id,
+                    answers: [],
+                    likedBy: [],
+                    tags: [q.category]
+                }));
+                await saveData();
+                questions.unshift(...sampleQuestions);
+            }
+
+            container.innerHTML = questions.map((q, index) => {
+                const level = getLevel(q.exp || 0);
+                const isLiked = q.likedBy && q.likedBy.includes(currentUser ? currentUser.id : '');
+                return `
+                    <div class="question-card" style="animation-delay: ${index * 0.1}s" onclick="showQuestionDetail('${q.id}')">
+                        <div class="question-header">
+                            <div class="question-avatar">${q.avatar || '😎'}</div>
+                            <div class="question-meta">
+                                <div class="question-author">
+                                    ${q.nickname || q.author || '匿名用户'}
+                                    <span class="level-badge">Lv${level.level}</span>
+                                </div>
+                                <div class="question-time">${formatTime(q.time || q.createTime)}</div>
+                            </div>
+                            <button class="question-follow" onclick="event.stopPropagation(); toggleFollow('${q.userId}')">关注</button>
+                        </div>
+                        <div class="question-title">${q.title}</div>
+                        ${q.content ? `<div class="question-content">${q.content}</div>` : ''}
+                        <div class="question-tags">
+                            ${(q.tags || [q.category || '其他']).map(t => `<span class="question-tag">#${t}</span>`).join('')}
+                        </div>
+                        <div class="question-footer">
+                            <div class="question-action ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLike('${q.id}')">
+                                <span class="icon">${isLiked ? '❤️' : '🤍'}</span>
+                                <span>${q.likes || 0}</span>
+                            </div>
+                            <div class="question-action">
+                                <span class="icon">💬</span>
+                                <span>${q.answers ? q.answers.length : (q.answerCount || 0)}</span>
+                            </div>
+                            <div class="question-action">
+                                <span class="icon">👀</span>
+                                <span>${q.views || 0}</span>
+                            </div>
+                            <div class="question-action" style="margin-left:auto;" onclick="event.stopPropagation(); showShareModal('${q.id}')">
+                                <span class="icon">📤</span>
+                                <span>分享</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function toggleLike(questionId) {
+            if (!currentUser) {
+                showToast('请先登录');
+                return;
+            }
+            const question = appData.questions.find(q => q.id === questionId);
+            if (!question) return;
+
+            if (!question.likedBy) question.likedBy = [];
+            const idx = question.likedBy.indexOf(currentUser.id);
+            if (idx > -1) {
+                question.likedBy.splice(idx, 1);
+                question.likes = (question.likes || 0) - 1;
+            } else {
+                question.likedBy.push(currentUser.id);
+                question.likes = (question.likes || 0) + 1;
+            }
+            await saveData();
+            loadQuestions();
+        }
+
+        function toggleFollow(userId) {
+            if (!currentUser) {
+                showToast('请先登录');
+                return;
+            }
+            if (!currentUser.following) currentUser.following = [];
+            const idx = currentUser.following.indexOf(userId);
+            if (idx > -1) {
+                currentUser.following.splice(idx, 1);
+                showToast('已取消关注');
+            } else {
+                currentUser.following.push(userId);
+                showToast('关注成功');
+            }
+            saveData();
+            loadQuestions();
+        }
+
+        // ==================== 提问 ====================
+        function showAskModal() {
+            if (!currentUser) {
+                showToast('请先登录');
+                return;
+            }
+            document.getElementById('askTitle').value = '';
+            document.getElementById('askContent').value = '';
+            document.getElementById('askModal').classList.add('show');
+        }
+
+        function closeAskModal() {
+            document.getElementById('askModal').classList.remove('show');
+        }
+
+        // 分类选择
+        document.querySelectorAll('#askCategorySelect .ask-category').forEach(cat => {
+            cat.addEventListener('click', () => {
+                document.querySelectorAll('#askCategorySelect .ask-category').forEach(c => c.classList.remove('selected'));
+                cat.classList.add('selected');
+                selectedCategory = cat.textContent;
+            });
+        });
+
+        async function submitQuestion() {
+            const title = document.getElementById('askTitle').value.trim();
+            const content = document.getElementById('askContent').value.trim();
+
+            if (!title) {
+                showToast('请输入问题标题');
+                return;
+            }
+
+            const newQuestion = {
+                id: 'Q' + Date.now(),
+                title: title,
+                content: content,
+                userId: currentUser.id,
+                author: currentUser.nickname,
+                nickname: currentUser.nickname,
+                avatar: currentUser.avatar,
+                category: selectedCategory,
+                tags: [selectedCategory],
+                answers: [],
+                likedBy: [],
+                likes: 0,
+                views: 0,
+                exp: currentUser.exp,
+                time: Date.now(),
+                createTime: new Date().toISOString()
+            };
+
+            appData.questions.push(newQuestion);
+            // 提问加积分
+            currentUser.exp = (currentUser.exp || 0) + 5;
+            await saveData();
+
+            closeAskModal();
+            showToast('发布成功！+5积分🎉');
+            loadQuestions();
+        }
+
+        // ==================== 问题详情 & 回答 ====================
+        async function showQuestionDetail(questionId) {
+            const question = appData.questions.find(q => q.id === questionId);
+            if (!question) return;
+
+            currentQuestion = question;
+            question.views = (question.views || 0) + 1;
+            await saveData();
+
+            renderQuestionDetail();
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function renderQuestionDetail() {
+            const q = currentQuestion;
+            const answers = q.answers || [];
+            const level = getLevel(q.exp || 0);
+            const isLiked = q.likedBy && q.likedBy.includes(currentUser ? currentUser.id : '');
+
+            const container = document.getElementById('detailContent');
+            container.innerHTML = `
+                <div class="detail-author-card">
+                    <div class="question-avatar">${q.avatar || '😎'}</div>
+                    <div class="question-meta">
+                        <div class="question-author">
+                            ${q.nickname || q.author || '匿名用户'}
+                            <span class="level-badge">Lv${level.level}</span>
+                        </div>
+                        <div class="question-time">${formatTime(q.time || q.createTime)} · ${q.views || 0}次浏览</div>
+                    </div>
+                </div>
+                <div class="detail-title">${q.title}</div>
+                <div class="detail-content">${(q.content || '').replace(/\n/g, '<br>')}</div>
+                <div class="question-tags">
+                    ${(q.tags || [q.category || '其他']).map(t => `<span class="question-tag">#${t}</span>`).join('')}
+                </div>
+                <div class="question-footer" style="margin-top:16px;">
+                    <div class="question-action ${isLiked ? 'liked' : ''}" onclick="toggleLike('${q.id}'); renderQuestionDetail();">
+                        <span class="icon">${isLiked ? '❤️' : '🤍'}</span>
+                        <span>${q.likes || 0}</span>
+                    </div>
+                    <div class="question-action">
+                        <span class="icon">💬</span>
+                        <span>${answers.length}</span>
+                    </div>
+                    <div class="question-action" style="margin-left:auto;" onclick="showShareModal('${q.id}')">
+                        <span class="icon">📤</span>
+                        <span>分享</span>
+                    </div>
+                </div>
+
+                <div class="answers-section">
+                    <div class="answers-title">💬 ${answers.length} 个回答</div>
+                    ${answers.length === 0 ? '<div class="empty" style="padding:30px;"><div class="icon">🤔</div><div class="text">还没有回答，快来抢沙发！</div></div>' :
+                        answers.map(a => `
+                            <div class="answer-card">
+                                <div class="answer-header">
+                                    <div class="answer-avatar">${a.avatar || '😎'}</div>
+                                    <div class="answer-author">${a.nickname || a.author || '匿名用户'}</div>
+                                    <div class="answer-time">${formatTime(a.time || a.createTime)}</div>
+                                </div>
+                                <div class="answer-content">${(a.content || '').replace(/\n/g, '<br>')}</div>
+                            </div>
+                        `).join('')
+                    }
+                </div>
+
+                <div class="answer-input-section" style="margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+                    <div class="form-group">
+                        <textarea class="form-input" id="answerContent" placeholder="写下你的回答，帮助提问者..." style="height:100px; padding:14px; resize:none;"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitAnswer()">发布回答</button>
+                </div>
+            `;
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            currentQuestion = null;
+        }
+
+        async function submitAnswer() {
+            if (!currentUser) {
+                showToast('请先登录');
+                return;
+            }
+            const content = document.getElementById('answerContent').value.trim();
+            if (!content) {
+                showToast('请输入回答内容');
+                return;
+            }
+            if (!currentQuestion) return;
+
+            const newAnswer = {
+                id: 'A' + Date.now(),
+                content: content,
+                userId: currentUser.id,
+                author: currentUser.nickname,
+                nickname: currentUser.nickname,
+                avatar: currentUser.avatar,
+                time: Date.now(),
+                createTime: new Date().toISOString()
+            };
+
+            if (!currentQuestion.answers) currentQuestion.answers = [];
+            currentQuestion.answers.push(newAnswer);
+
+            // 回答加积分
+            currentUser.exp = (currentUser.exp || 0) + 8;
+            await saveData();
+
+            showToast('回答成功！+8积分🎉');
+            renderQuestionDetail();
+            loadQuestions();
+        }
+
+        // ==================== 分享 ====================
+        function showShareModal(questionId) {
+            const question = appData.questions.find(q => q.id === questionId);
+            if (!question) return;
+            currentShareQuestion = question;
+
+            document.getElementById('shareTitle').textContent = question.title;
+            document.getElementById('shareContent').textContent = (question.content || '').substring(0, 50) + '...快来问答星球一起讨论吧！';
+
+            document.getElementById('shareModal').classList.add('show');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('show');
+        }
+
+        function shareTo(platform) {
+            const messages = {
+                wechat: '已复制链接，快去分享给微信好友吧~',
+                moments: '已生成分享图，快去发朋友圈吧~',
+                qq: '已复制链接，快去分享给QQ好友吧~',
+                copy: '链接已复制到剪贴板！'
+            };
+            showToast(messages[platform] || '分享成功');
+
+            // 模拟复制链接
+            const link = `https://问答星球.app/q/${currentShareQuestion ? currentShareQuestion.id : ''}`;
+            try {
+                navigator.clipboard.writeText(link);
+            } catch (e) {}
+
+            setTimeout(() => closeShareModal(), 1000);
+        }
+
+        // ==================== 个人中心 ====================
+        function renderProfile() {
+            if (!currentUser) return;
+            const container = document.getElementById('profileContent');
+            const level = getLevel(currentUser.exp || 0);
+            const myQuestions = appData.questions.filter(q => q.userId === currentUser.id);
+            const myAnswers = [];
+            appData.questions.forEach(q => {
+                (q.answers || []).forEach(a => {
+                    if (a.userId === currentUser.id) myAnswers.push(a);
+                });
+            });
+            const myLikes = appData.questions.filter(q => q.likedBy && q.likedBy.includes(currentUser.id)).length;
+
+            const wallpaper = WALLPAPERS.find(w => w.id === currentUser.wallpaper);
+
+            container.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-header-bg" style="background: ${wallpaper ? wallpaper.gradient : 'linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)'}"></div>
+                    <div class="profile-edit-bg" onclick="showWallpaperModal()">🎨 换背景</div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-avatar-large" onclick="showEditProfile()">${currentUser.avatar || '😎'}</div>
+                    <div class="profile-name-row">
+                        <div class="profile-name">${currentUser.nickname || currentUser.username}</div>
+                        <span class="profile-level">Lv${level.level} ${level.name}</span>
+                    </div>
+                    <div class="profile-bio">${currentUser.bio || '这个人很懒，什么都没写~'}</div>
+                    <div class="profile-stats">
+                        <div class="profile-stat" onclick="showToast('我的提问')">
+                            <div class="value">${myQuestions.length}</div>
+                            <div class="label">提问</div>
+                        </div>
+                        <div class="profile-stat" onclick="showToast('我的回答')">
+                            <div class="value">${myAnswers.length}</div>
+                            <div class="label">回答</div>
+                        </div>
+                        <div class="profile-stat" onclick="showToast('我的收藏')">
+                            <div class="value">${myLikes}</div>
+                            <div class="label">点赞</div>
+                        </div>
+                        <div class="profile-stat" onclick="showToast('积分：${currentUser.exp || 0}')">
+                            <div class="value">${currentUser.exp || 0}</div>
+                            <div class="label">积分</div>
+                        </div>
+                    </div>
+                    <div class="profile-menu">
+                        <div class="profile-menu-item" onclick="showEditProfile()">
+                            <span class="icon">✏️</span>
+                            <span class="text">编辑资料</span>
+                            <span class="arrow">›</span>
+                        </div>
+                        <div class="profile-menu-item" onclick="showWallpaperModal()">
+                            <span class="icon">🎨</span>
+                            <span class="text">自定义背景</span>
+                            <span class="arrow">›</span>
+                        </div>
+                        <div class="profile-menu-item" onclick="toggleTheme()">
+                            <span class="icon">🌙</span>
+                            <span class="text">深色模式</span>
+                            <span class="arrow">${currentUser.theme === 'dark' ? '已开启' : '未开启'}</span>
+                        </div>
+                        <div class="profile-menu-item" onclick="showDonate()">
+                            <span class="icon">❤️</span>
+                            <span class="text">支持作者</span>
+                            <span class="arrow">›</span>
+                        </div>
+                        <div class="profile-menu-item" onclick="showToast('设置功能开发中~')">
+                            <span class="icon">⚙️</span>
+                            <span class="text">设置</span>
+                            <span class="arrow">›</span>
+                        </div>
+                        <div class="profile-menu-item" onclick="logout()">
+                            <span class="icon">🚪</span>
+                            <span class="text" style="color:#ef4444;">退出登录</span>
+                            <span class="arrow">›</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 编辑资料
+        function showEditProfile() {
+            document.getElementById('editNickname').value = currentUser.nickname || '';
+            document.getElementById('editBio').value = currentUser.bio || '';
+
+            // 渲染头像选择
+            const avatars = ['😎', '🐱', '🐶', '🦊', '🐼', '🦁', '🐸', '🦄', '🤖', '👻', '🎃', '⭐'];
+            const container = document.getElementById('editAvatarSelect');
+            container.innerHTML = avatars.map(a => `
+                <div class="avatar-option ${a === currentUser.avatar ? 'selected' : ''}" data-avatar="${a}">${a}</div>
+            `).join('');
+            container.querySelectorAll('.avatar-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    container.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                });
+            });
+
+            document.getElementById('editProfileModal').classList.add('show');
+        }
+
+        function closeEditProfile() {
+            document.getElementById('editProfileModal').classList.remove('show');
+        }
+
+        async function saveProfile() {
+            const nickname = document.getElementById('editNickname').value.trim();
+            const bio = document.getElementById('editBio').value.trim();
+            const selectedAvatarEl = document.querySelector('#editAvatarSelect .avatar-option.selected');
+            const avatar = selectedAvatarEl ? selectedAvatarEl.dataset.avatar : currentUser.avatar;
+
+            if (nickname) currentUser.nickname = nickname;
+            if (bio) currentUser.bio = bio;
+            currentUser.avatar = avatar;
+
+            await saveData();
+            closeEditProfile();
+            showToast('资料修改成功！');
+            renderProfile();
+            updateUserUI();
+        }
+
+        // 壁纸选择
+        function showWallpaperModal() {
+            const container = document.getElementById('wallpaperGrid');
+            container.innerHTML = WALLPAPERS.map(w => `
+                <div class="wallpaper-option ${w.id === currentUser.wallpaper ? 'selected' : ''}" data-id="${w.id}" style="background: ${w.gradient};">
+                    ${w.id === currentUser.wallpaper ? '<div class="check">✓</div>' : ''}
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.wallpaper-option').forEach(opt => {
+                opt.addEventListener('click', async () => {
+                    const id = opt.dataset.id;
+                    currentUser.wallpaper = id;
+                    await saveData();
+                    applyUserSettings();
+                    showWallpaperModal(); // 重新渲染选中状态
+                    showToast('背景已更换！');
+                });
+            });
+
+            document.getElementById('wallpaperModal').classList.add('show');
+        }
+
+        function closeWallpaperModal() {
+            document.getElementById('wallpaperModal').classList.remove('show');
+            renderProfile();
+        }
+
+        async function resetWallpaper() {
+            currentUser.wallpaper = 'default';
+            await saveData();
+            applyUserSettings();
+            closeWallpaperModal();
+            showToast('已恢复默认背景');
+        }
+
+        // 捐赠
+        function showDonate() {
+            showToast('感谢你的支持！捐赠功能开发中~');
+        }
+
+        function showNotifications() {
+            showToast('暂无新通知~');
+        }
+
+        function logout() {
+            if (!confirm('确定要退出登录吗？')) return;
+            currentUser = null;
+            localStorage.removeItem('qa_current_user');
+            document.getElementById('mainApp').classList.remove('show');
+            document.getElementById('authPage').style.display = 'flex';
+            switchPage('home');
+        }
+
+        // 点击遮罩关闭弹窗
+        document.querySelectorAll('.modal-mask').forEach(mask => {
+            mask.addEventListener('click', (e) => {
+                if (e.target === mask) mask.classList.remove('show');
+            });
+        });
+
+        // 分类标签点击
+        document.querySelectorAll('#categories .cat-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                document.querySelectorAll('#categories .cat-tag').forEach(t => t.classList.remove('active'));
+                tag.classList.add('active');
+                showToast('已切换到' + tag.textContent + '分类');
+            });
+        });
+
+        // ==================== 初始化 ====================
+        async function init() {
+            await loadData();
+
+            // 检查登录状态
+            const savedUser = localStorage.getItem('qa_current_user');
+            if (savedUser) {
+                try {
+                    const parsedUser = JSON.parse(savedUser);
+                    const exists = appData.users.find(u => u.id === parsedUser.id);
+                    if (exists) {
+                        currentUser = exists;
+                        enterApp();
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            // 未登录，显示登录页
+            document.getElementById('authPage').style.display = 'flex';
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
